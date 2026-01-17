@@ -4,10 +4,10 @@
 
 * Installation
 ```
-bash <(curl -Ls https://raw.githubusercontent.com/co2f2e/sshwiftymain/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/co2f2e/sshwifty/main/install.sh)
 ```
 
 * Uninstallation
 ```
-bash <(curl -Ls https://raw.githubusercontent.com/co2f2e/sshwiftymain/uninstall.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/co2f2e/sshwifty/main/uninstall.sh)
 ```
