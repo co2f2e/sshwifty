@@ -12,7 +12,7 @@ bash <(curl -Ls https://raw.githubusercontent.com/co2f2e/sshwifty/main/install.s
 bash <(curl -Ls https://raw.githubusercontent.com/co2f2e/sshwifty/main/uninstall.sh)
 ```
 
-* Ngnix
+* Nginx
 ```nginx
     location / {
         proxy_pass http://127.0.0.1:8182;
