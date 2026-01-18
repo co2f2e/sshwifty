@@ -4,6 +4,7 @@ set -e
 INSTALL_DIR="/opt/sshwifty"
 PORT="8182"
 SERVICE_NAME="sshwifty"
+CONFIG_FILE="${INSTALL_DIR}/config.json"
 
 ACTION="$1"
 
