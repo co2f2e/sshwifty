@@ -30,7 +30,7 @@ bash <(curl -Ls https://raw.githubusercontent.com/co2f2e/sshwifty/main/install.s
         proxy_set_header Connection "upgrade";
     }
 ```
-> [!NOTE]
+> [!TIP]
 > For more configuration file options and detailed explanations, please refer to the official configuration documentation.
 
 
