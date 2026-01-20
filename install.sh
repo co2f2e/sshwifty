@@ -14,35 +14,37 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 stall_dependencies() {
-    echo "检查并安装必要依赖: tar, curl, ss"
+	echo "检查并安装必要依赖: tar, curl, ss"
 
-    MISSING=()
-    for CMD in tar curl ss; do
-        if ! command -v "$CMD" >/dev/null 2>&1; then
-            MISSING+=("$CMD")
-        fi
-    done
+	MISSING=()
+	for CMD in tar curl ss; do
+		if ! command -v "$CMD" >/dev/null 2>&1; then
+			MISSING+=("$CMD")
+		fi
+	done
 
-    if [ "${#MISSING[@]}" -eq 0 ]; then
-        return
-    fi
+	if [ "${#MISSING[@]}" -eq 0 ]; then
+		return
+	fi
 
-    echo "缺少依赖: ${MISSING[*]}"
+	echo "缺少依赖: ${MISSING[*]}"
 
-    if [ -f /etc/debian_version ]; then
-        echo "检测到 Debian/Ubuntu 系统，使用 apt 安装"
-        apt update
-        apt install -y "${MISSING[@]}"
-    elif [ -f /etc/redhat-release ]; then
-        echo "检测到 RHEL/CentOS 系统，使用 yum 安装"
-        yum install -y "${MISSING[@]}"
-    else
-        echo "未能自动识别系统类型，请手动安装: ${MISSING[*]}"
-        exit 1
-    fi
+	if [ -f /etc/debian_version ]; then
+		echo "检测到 Debian/Ubuntu 系统，使用 apt 安装"
+		apt update
+		apt install -y "${MISSING[@]}"
+	elif [ -f /etc/redhat-release ]; then
+		echo "检测到 RHEL/CentOS 系统，使用 yum 安装"
+		yum install -y "${MISSING[@]}"
+	else
+		echo "未能自动识别系统类型，请手动安装: ${MISSING[*]}"
+		exit 1
+	fi
 }
 
 install_sshwifty() {
+	stall_dependencies
+
 	if ss -tuln | grep -q ":${PORT} "; then
 		echo "端口 ${PORT} 已被占用，请先释放或修改 PORT 后再运行"
 		exit 1
@@ -50,7 +52,7 @@ install_sshwifty() {
 	echo "端口 ${PORT} 可用"
 
 	while true; do
-		read -p "请输入访问 sshwifty 的域名，例如 ssh.example.com: " DOMAIN
+		read -p "请输入已解析到本机的域名: " DOMAIN
 		if [ -z "$DOMAIN" ]; then
 			echo "域名不能为空"
 			continue
@@ -64,9 +66,9 @@ install_sshwifty() {
 	echo "域名设置为: $DOMAIN"
 
 	while true; do
-		read -s -p "请输入 sshwifty SharedKey: " PASS1
+		read -s -p "请设置 sshwifty 登录密码: " PASS1
 		echo
-		read -s -p "请再次确认 SharedKey: " PASS2
+		read -s -p "请再次确认登录密码: " PASS2
 		echo
 		if [ -z "$PASS1" ]; then
 			echo "密码不能为空"
@@ -83,7 +85,7 @@ install_sshwifty() {
 		SHARED_KEY="$PASS1"
 		break
 	done
-	echo "SharedKey 设置完成"
+	echo "登录密码设置完成"
 
 	mkdir -p "$INSTALL_DIR"
 	chmod 755 "$INSTALL_DIR"
@@ -122,18 +124,29 @@ install_sshwifty() {
 	FILENAME=$(basename "$URL")
 	curl -L "$URL" -o "$FILENAME"
 
-	FILETYPE=$(file "$FILENAME")
-	if echo "$FILETYPE" | grep -q "tar archive"; then
-		echo "解压 tar.gz 压缩包"
-		tar -xzf "$FILENAME" && rm -f "$FILENAME"
-		
-		TARFILE=$(find . -maxdepth 1 -type f -name "*.tar" | head -n1)
-    	if [ -n "$TARFILE" ]; then
-        	echo "再次解压 tar 文件: $TARFILE"
-        	tar -xf "$TARFILE" && rm -f "$TARFILE"
-    	fi
-	else
-		echo "下载的文件不是 tar.gz 压缩包"
+	while true; do
+		TARFILE=$(find . -maxdepth 1 -type f -name "*.tar.gz" -o -name "*.tar" | head -n1)
+		if [ -z "$TARFILE" ]; then
+			break
+		fi
+
+		echo "解压压缩包: $TARFILE"
+
+		case "$TARFILE" in
+		*.tar.gz)
+			tar -xzf "$TARFILE"
+			;;
+		*.tar)
+			tar -xf "$TARFILE"
+			;;
+		esac
+
+		rm -f "$TARFILE"
+	done
+
+	EXEC_FILE=$(find . -maxdepth 1 -type f -executable | head -n1)
+	if [ -z "$EXEC_FILE" ]; then
+		echo "解压后未找到可执行文件"
 		exit 1
 	fi
 
@@ -243,8 +256,8 @@ change_password() {
 
 	if systemctl is-active --quiet ${SERVICE_NAME}; then
 		echo "======================================"
-		echo "SharedKey 修改成功"
-		echo "新的 SharedKey: ${PASS1}"
+		echo "登录密码修改成功"
+		echo "新的登录密码: ${PASS1}"
 		echo "配置文件: ${CONFIG_FILE}"
 		echo "======================================"
 	else
@@ -264,7 +277,7 @@ passwd | password | changepass)
 *)
 	echo "用法："
 	echo "  $0 install   安装 sshwifty"
-	echo "  $0 passwd    修改登录密码"
+	echo "  $0 passwd    修改 sshwifty 登录密码"
 	exit 1
 	;;
 esac
