@@ -109,6 +109,7 @@ install_sshwifty() {
 		grep browser_download_url |
 		grep linux |
 		grep "$ARCH_TAG" |
+		grep -E "\.tar\.gz$" |
 		head -n1 |
 		cut -d '"' -f4)
 
