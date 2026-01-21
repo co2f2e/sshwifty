@@ -46,10 +46,9 @@ install_sshwifty() {
 	stall_dependencies
 
 	if ss -tuln | grep -q ":${PORT} "; then
-		echo "端口 ${PORT} 已被占用，请先释放或修改 PORT 后再运行"
+		echo "端口 ${PORT} 已被占用，请先释放后再运行"
 		exit 1
 	fi
-	echo "端口 ${PORT} 可用"
 
 	while true; do
 		read -p "请输入已解析到本机的域名: " DOMAIN
@@ -197,14 +196,10 @@ EOF
 	if systemctl is-active --quiet ${SERVICE_NAME}; then
 		echo "======================================"
 		echo "sshwifty 安装完成并已启动"
-		echo
 		echo "访问地址: https://${DOMAIN}"
 		echo "监听端口: 127.0.0.1:${PORT}"
-		echo
-		echo "sshwifty 登录信息："
-		echo "  登录密码 (SharedKey): ${SHARED_KEY}"
-		echo "  配置文件路径: ${INSTALL_DIR}/config.json"
-		echo
+		echo "登录密码: ${SHARED_KEY}"
+		echo "配置文件路径: ${INSTALL_DIR}/config.json"
 		echo "请确保 Nginx 已正确配置反向代理"
 		echo "======================================"
 	else
